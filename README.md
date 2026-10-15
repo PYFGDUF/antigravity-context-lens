@@ -72,12 +72,12 @@
 
 **macOS / Linux**:
 ```bash
-git clone https://github.com/your-username/antigravity-context-lens.git ~/.gemini/config/plugins/context-lens
+git clone https://github.com/PYFGDUF/antigravity-context-lens.git ~/.gemini/config/plugins/context-lens
 ```
 
 **Windows (PowerShell)**:
 ```powershell
-git clone https://github.com/your-username/antigravity-context-lens.git "$env:USERPROFILE\.gemini\config\plugins\context-lens"
+git clone https://github.com/PYFGDUF/antigravity-context-lens.git "$env:USERPROFILE\.gemini\config\plugins\context-lens"
 ```
 
 ### 方式二：手动解压
