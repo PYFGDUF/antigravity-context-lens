@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/hero.svg" width="100%" alt="Context Lens for Google Antigravity - Real-time Context & Token Usage Monitor">
+<img src="./assets/hero_en.svg" width="100%" alt="Context Lens for Google Antigravity - Real-time Context & Token Usage Monitor">
 
 <br>
 
@@ -135,7 +135,8 @@ Antigravity Client (GUI)
 ```text
 context-lens/
 ├── assets/
-│   ├── hero.svg                 # Hi-res pure vector Hero Banner (1200x440 SVG)
+│   ├── hero.svg                 # Hi-res pure vector Chinese Hero Banner (1200x440 SVG)
+│   ├── hero_en.svg              # Hi-res pure vector English Hero Banner (1200x440 SVG)
 │   ├── logo.svg                 # Plugin icon (64x64 SVG)
 │   └── icons/                   # Vector section & feature icons (SVG, Zero Emoji)
 ├── sidecars/

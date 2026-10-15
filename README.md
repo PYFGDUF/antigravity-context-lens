@@ -135,7 +135,8 @@ Antigravity Client (GUI)
 ```text
 context-lens/
 ├── assets/
-│   ├── hero.svg                 # 高清纯矢量 Hero Banner (1200x440 SVG)
+│   ├── hero.svg                 # 高清纯矢量中文版 Hero Banner (1200x440 SVG)
+│   ├── hero_en.svg              # 高清纯矢量英文版 Hero Banner (1200x440 SVG)
 │   ├── logo.svg                 # 插件图标 (64x64 SVG)
 │   └── icons/                   # 纯矢量章节与特性图标 (SVG, 零 Emoji)
 ├── sidecars/
