@@ -1,0 +1,5 @@
+{
+  "name": "context-lens",
+  "description": "Antigravity 原生风格上下文透视扩展：实时展示当前会话上下文用量、Prompt 缓存命中率、Token 走势图与优化建议。",
+  "logo": "assets/logo.svg"
+}

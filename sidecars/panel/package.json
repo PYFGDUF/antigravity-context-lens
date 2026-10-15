@@ -1,0 +1,7 @@
+{
+  "name": "context-lens-panel",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Auxiliary side panel for Context Lens UI extension."
+}

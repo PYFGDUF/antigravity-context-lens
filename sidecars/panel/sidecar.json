@@ -1,0 +1,18 @@
+{
+  "command": "node",
+  "args": ["main.mjs"],
+  "restart_policy": "always",
+  "display_name": "Context Lens",
+  "description": "实时展示当前会话上下文用量、Prompt 缓存命中率与 Token 消耗走势",
+  "has_web_ui": true,
+  "ui_config": {
+    "display_name": "Context Lens",
+    "views": [
+      {
+        "path": "/",
+        "entrypoint": "SIDECAR_UI_ENTRYPOINT_AUX_PANE",
+        "title": "Context Lens"
+      }
+    ]
+  }
+}
