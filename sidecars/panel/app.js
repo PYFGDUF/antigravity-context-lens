@@ -1,6 +1,6 @@
 // Frontend Logic for Context Lens UI Extension
 // Integrates with Antigravity Sidecar SDK & window.sidecar
-// Full Multi-language (i18n) Support: zh-CN & en
+// Full Multi-language (i18n) Support & Seamless Conversation Switching
 
 const sidecar = window.sidecar;
 const $ = (id) => document.getElementById(id);
@@ -16,6 +16,8 @@ const TRANSLATIONS = {
     paused: '已暂停',
     reading: '正在读取会话…',
     switchConv: '切换',
+    returnHost: '返回当前',
+    returnHostToast: '已返回当前活动会话',
     windowLimit: '窗口上限:',
     currentUsage: '当前上下文用量 (Current Prompt Context)',
     healthGood: '健康 (充足)',
@@ -73,6 +75,8 @@ const TRANSLATIONS = {
     paused: 'Paused',
     reading: 'Reading conversation…',
     switchConv: 'Switch',
+    returnHost: 'Return Active',
+    returnHostToast: 'Returned to active conversation',
     windowLimit: 'Limit:',
     currentUsage: 'Current Prompt Context',
     healthGood: 'Healthy (Plenty)',
@@ -126,7 +130,10 @@ const TRANSLATIONS = {
   },
 };
 
-// Language state
+// ---------------------------------------------------------------------------
+// Language Management
+// ---------------------------------------------------------------------------
+
 function detectDefaultLang() {
   const saved = localStorage.getItem('context_lens_lang');
   if (saved && (saved === 'zh' || saved === 'en')) return saved;
@@ -150,7 +157,6 @@ function updateStaticTexts() {
     const key = el.getAttribute('data-i18n');
     el.textContent = t(key);
   });
-  // Update toggle button text
   const langBtn = $('toggle-lang-btn');
   if (langBtn) {
     langBtn.textContent = currentLang === 'zh' ? 'EN' : '中';
@@ -162,7 +168,9 @@ function updateStaticTexts() {
 // App State
 // ---------------------------------------------------------------------------
 
-let activeConvId = sidecar?.conversationId || null;
+let hostConvId = sidecar?.conversationId || null;
+let activeConvId = hostConvId;
+let isViewingOtherConv = false;
 let currentLimit = 1048576; // Default 1M
 let autoRefresh = true;
 let refreshTimer = null;
@@ -235,6 +243,16 @@ function renderStats(stats) {
   // Session Meta
   $('current-conv-title').textContent = stats.title || t('reading');
   $('current-conv-title').title = stats.title || '';
+
+  // Show or hide 'Return to Active' button
+  const returnBtn = $('return-host-btn');
+  if (returnBtn) {
+    if (isViewingOtherConv && hostConvId && activeConvId !== hostConvId) {
+      returnBtn.hidden = false;
+    } else {
+      returnBtn.hidden = true;
+    }
+  }
 
   const latest = stats.latest || {};
   const currentTokens = latest.contextTokens || 0;
@@ -457,8 +475,12 @@ async function fetchData(quiet = false) {
   if (!quiet) refreshBtn.classList.add('spinning');
 
   try {
-    if (sidecar?.conversationId && sidecar.conversationId !== activeConvId) {
-      activeConvId = sidecar.conversationId;
+    // Check if host conversation changed from host client navigation
+    if (sidecar?.conversationId && sidecar.conversationId !== hostConvId) {
+      hostConvId = sidecar.conversationId;
+      if (!isViewingOtherConv) {
+        activeConvId = hostConvId;
+      }
     }
 
     const query = activeConvId ? `?conversationId=${encodeURIComponent(activeConvId)}` : '';
@@ -487,14 +509,15 @@ async function fetchData(quiet = false) {
 // ---------------------------------------------------------------------------
 
 async function askToCompact() {
-  if (!activeConvId) {
+  const targetId = activeConvId || hostConvId;
+  if (!targetId) {
     showToast(currentLang === 'zh' ? '未处于活跃会话中' : 'Not in an active conversation');
     return;
   }
 
   if (sidecar?.agent?.sendMessage) {
     try {
-      await sidecar.agent.sendMessage('/compact', activeConvId);
+      await sidecar.agent.sendMessage('/compact', targetId);
       showToast(t('compactToastSent'));
       fetchData();
     } catch (err) {
@@ -568,7 +591,7 @@ async function openConvModal() {
   modal.hidden = false;
 
   try {
-    const data = await callApi('/api/conversations?limit=15');
+    const data = await callApi('/api/conversations?limit=20');
     const convs = data.conversations || [];
     if (convs.length === 0) {
       listEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-muted)">${t('modalEmpty')}</div>`;
@@ -580,18 +603,33 @@ async function openConvModal() {
         (c) => `
       <div class="modal-item ${c.id === activeConvId ? 'active' : ''}" data-id="${c.id}">
         <div class="modal-item-title">${c.title || 'Conv ' + c.id.slice(0, 8)}</div>
-        <div class="modal-item-time">${formatTime(c.mtime)} · ID: ${c.id.slice(0, 8)}</div>
+        <div class="modal-item-time">${formatTime(c.mtime)} · ID: ${c.id.slice(0, 8)}${c.id === hostConvId ? ' (当前)' : ''}</div>
       </div>
     `
       )
       .join('');
 
     listEl.querySelectorAll('.modal-item').forEach((item) => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', async () => {
         const id = item.getAttribute('data-id');
-        activeConvId = id;
+        if (!id) return;
         modal.hidden = true;
-        fetchData();
+
+        activeConvId = id;
+        isViewingOtherConv = Boolean(hostConvId && id !== hostConvId);
+
+        // If Antigravity host supports switching conversation, switch IDE to it
+        if (sidecar?.ui?.toggleConversation) {
+          try {
+            await sidecar.ui.toggleConversation(id);
+            hostConvId = id;
+            isViewingOtherConv = false;
+          } catch (e) {
+            console.warn('toggleConversation failed:', e);
+          }
+        }
+
+        fetchData(false);
         showToast(t('switchSuccessToast'));
       });
     });
@@ -612,6 +650,37 @@ function setupEventListeners() {
   $('switch-conv-btn').addEventListener('click', openConvModal);
   $('close-modal-btn').addEventListener('click', () => {
     $('conv-modal').hidden = true;
+  });
+
+  // Return to active conversation button
+  const returnBtn = $('return-host-btn');
+  if (returnBtn) {
+    returnBtn.addEventListener('click', async () => {
+      if (!hostConvId) return;
+      activeConvId = hostConvId;
+      isViewingOtherConv = false;
+      if (sidecar?.ui?.toggleConversation) {
+        try {
+          await sidecar.ui.toggleConversation(hostConvId);
+        } catch (e) {}
+      }
+      fetchData(false);
+      showToast(t('returnHostToast'));
+    });
+  }
+
+  // Close modal on backdrop click
+  $('conv-modal').addEventListener('click', (e) => {
+    if (e.target === $('conv-modal')) {
+      $('conv-modal').hidden = true;
+    }
+  });
+
+  // Close modal on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !$('conv-modal').hidden) {
+      $('conv-modal').hidden = true;
+    }
   });
 
   const limitSelect = $('limit-select');

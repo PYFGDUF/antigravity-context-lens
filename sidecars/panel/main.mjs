@@ -60,7 +60,7 @@ function saveConfig(cfg) {
   return updated;
 }
 
-function getRecentConversations(limit = 12) {
+function getRecentConversations(limit = 15) {
   if (!existsSync(BRAIN_DIR)) return [];
   try {
     const entries = readdirSync(BRAIN_DIR, { withFileTypes: true });
@@ -77,10 +77,37 @@ function getRecentConversations(limit = 12) {
       }
     }
     convs.sort((a, b) => b.mtime - a.mtime);
-    return convs.slice(0, limit).map((c) => ({
+    const top = convs.slice(0, limit);
+    if (top.length === 0) return [];
+
+    // Batch query titles from sqlite db if available
+    const titleMap = new Map();
+    try {
+      const dbPath = join(APP_DATA_DIR, 'conversation_summaries.db');
+      if (existsSync(dbPath)) {
+        const inClause = top.map((c) => `"${c.id.replace(/"/g, '""')}"`).join(',');
+        const query = `SELECT conversation_id, title FROM conversation_summaries WHERE conversation_id IN (${inClause});`;
+        const out = execFileSync('sqlite3', [dbPath, '-separator', '|||', query], {
+          encoding: 'utf8',
+          timeout: 1000,
+        }).trim();
+        if (out) {
+          const lines = out.split('\n');
+          for (const line of lines) {
+            const parts = line.split('|||');
+            if (parts.length >= 2 && parts[0] && parts[1]) {
+              const t = parts[1].trim();
+              if (t) titleMap.set(parts[0].trim(), t);
+            }
+          }
+        }
+      }
+    } catch (e) {}
+
+    return top.map((c) => ({
       id: c.id,
       mtime: c.mtime,
-      title: getConversationTitle(c.id),
+      title: titleMap.get(c.id) || getConversationTitle(c.id),
     }));
   } catch (err) {
     console.error('Error listing conversations:', err);
@@ -89,7 +116,7 @@ function getRecentConversations(limit = 12) {
 }
 
 function getConversationTitle(convId) {
-  // 1. Try sqlite db if available
+  // 1. Try sqlite db for single query
   try {
     const dbPath = join(APP_DATA_DIR, 'conversation_summaries.db');
     if (existsSync(dbPath)) {
@@ -97,19 +124,19 @@ function getConversationTitle(convId) {
       const out = execFileSync(
         'sqlite3',
         [dbPath, `SELECT title FROM conversation_summaries WHERE conversation_id = "${escapedId}" LIMIT 1;`],
-        { encoding: 'utf8', timeout: 800 }
+        { encoding: 'utf8', timeout: 500 }
       ).trim();
       if (out) return out;
     }
   } catch (e) {}
 
-  // 2. Fallback: extract from first user input in transcript.jsonl
+  // 2. Fallback: extract from first message in transcript.jsonl
   try {
     const p = join(BRAIN_DIR, convId, '.system_generated', 'logs', 'transcript.jsonl');
     if (existsSync(p)) {
       const fd = openSync(p, 'r');
-      const buf = Buffer.alloc(4096);
-      const bytesRead = readSync(fd, buf, 0, 4096, 0);
+      const buf = Buffer.alloc(8192);
+      const bytesRead = readSync(fd, buf, 0, 8192, 0);
       closeSync(fd);
       if (bytesRead > 0) {
         const text = buf.toString('utf8', 0, bytesRead);
@@ -118,13 +145,13 @@ function getConversationTitle(convId) {
           if (!line.trim()) continue;
           try {
             const obj = JSON.parse(line);
-            if (obj.type === 'USER_INPUT' && obj.content) {
+            if (obj.content && typeof obj.content === 'string') {
               const cleaned = obj.content
                 .replace(/<[^>]+>/g, '')
                 .trim()
                 .replace(/\s+/g, ' ');
-              if (cleaned) {
-                return cleaned.slice(0, 45) + (cleaned.length > 45 ? '…' : '');
+              if (cleaned && cleaned.length > 2) {
+                return cleaned.slice(0, 42) + (cleaned.length > 42 ? '…' : '');
               }
             }
           } catch (pe) {}
