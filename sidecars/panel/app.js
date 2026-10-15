@@ -56,7 +56,7 @@ const TRANSLATIONS = {
     modalLoading: '正在加载会话列表…',
     modalEmpty: '暂无历史会话',
     modalLoadFailed: '加载失败: {err}',
-    reportTitle: '### 📊 Antigravity 会话上下文报告 ({title})',
+    reportTitle: '### [Context Lens] Antigravity 会话上下文报告 ({title})',
     reportPromptContext: '- **当前上下文窗口占用**: {used} Tokens / {limit} Tokens ({pct}%)',
     reportCache: '- **缓存命中 (Prompt Cache)**: {cache} Tokens ({pct}%)',
     reportInput: '- **新增输入 (New Input)**: {input} Tokens',
@@ -113,7 +113,7 @@ const TRANSLATIONS = {
     modalLoading: 'Loading conversations…',
     modalEmpty: 'No conversations found',
     modalLoadFailed: 'Failed to load: {err}',
-    reportTitle: '### 📊 Antigravity Context Diagnostic Report ({title})',
+    reportTitle: '### [Context Lens] Antigravity Context Diagnostic Report ({title})',
     reportPromptContext: '- **Current Context Usage**: {used} Tokens / {limit} Tokens ({pct}%)',
     reportCache: '- **Prompt Cache Read**: {cache} Tokens ({pct}%)',
     reportInput: '- **New Input Tokens**: {input} Tokens',
@@ -431,7 +431,10 @@ function renderTools(tools) {
     html += `
       <div class="tool-row">
         <div class="tool-name-col" title="${name}">
-          <span style="font-family: var(--font-mono); font-size: 11px;">⚙</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); flex-shrink: 0;">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
           <span>${name}</span>
         </div>
         <div class="tool-bar-track">

@@ -91,21 +91,32 @@
       <div class="composition-grid">
         <div class="comp-item">
           <div class="comp-label">
-            <span style="color: var(--color-green);">⚡</span> <span data-i18n="cacheHit">缓存命中 (Cache)</span>
+            <svg class="comp-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-green);">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span data-i18n="cacheHit">缓存命中 (Cache)</span>
           </div>
           <div id="comp-cache" class="comp-val">0</div>
           <div id="comp-cache-ratio" class="comp-ratio">0.0% 命中率</div>
         </div>
         <div class="comp-item">
           <div class="comp-label">
-            <span style="color: var(--color-blue);">🆕</span> <span data-i18n="inputTokens">增量输入 (Input)</span>
+            <svg class="comp-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-blue);">
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+              <path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"></path>
+            </svg>
+            <span data-i18n="inputTokens">增量输入 (Input)</span>
           </div>
           <div id="comp-input" class="comp-val">0</div>
           <div class="comp-label" style="font-size: 10px;" data-i18n="inputTokensDesc">未命中新增部分</div>
         </div>
         <div class="comp-item">
           <div class="comp-label">
-            <span style="color: var(--color-purple);">💬</span> <span data-i18n="outputTokens">上轮输出 (Output)</span>
+            <svg class="comp-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-purple);">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span data-i18n="outputTokens">上轮输出 (Output)</span>
           </div>
           <div id="comp-output" class="comp-val">0</div>
           <div class="comp-label" style="font-size: 10px;" data-i18n="outputTokensDesc">模型生成消耗</div>
@@ -198,7 +209,12 @@
       <div class="modal-box">
         <div class="modal-header">
           <h3 data-i18n="modalTitle">切换查看会话</h3>
-          <button id="close-modal-btn" class="icon-button" style="border:none;">✕</button>
+          <button id="close-modal-btn" class="icon-button" style="border:none;" title="Close">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
         <div id="modal-conv-list" class="modal-list">
           <!-- Injected dynamically -->
