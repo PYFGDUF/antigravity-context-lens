@@ -1,6 +1,6 @@
 // Frontend Logic for Context Lens UI Extension
 // Integrates with Antigravity Sidecar SDK & window.sidecar
-// Full Multi-language (i18n) Support & Seamless Conversation Switching
+// Focused on the Active Conversation with Native Antigravity Design & Full i18n
 
 const sidecar = window.sidecar;
 const $ = (id) => document.getElementById(id);
@@ -14,10 +14,8 @@ const TRANSLATIONS = {
     brandTitle: '上下文透视',
     live: '监控中',
     paused: '已暂停',
-    reading: '正在读取会话…',
-    switchConv: '切换',
-    returnHost: '返回当前',
-    returnHostToast: '已返回当前活动会话',
+    reading: '正在读取当前会话…',
+    currentConv: '当前会话',
     windowLimit: '窗口上限:',
     currentUsage: '当前上下文用量 (Current Prompt Context)',
     healthGood: '健康 (充足)',
@@ -52,12 +50,8 @@ const TRANSLATIONS = {
     compactToastSent: '已向当前会话发送 /compact 压缩指令',
     compactToastManual: '提示：请在当前会话对话框中输入 /compact 执行压缩',
     copiedToast: '已成功复制诊断报告 Markdown',
+    copiedIdToast: '已复制当前会话 ID',
     copyFailedToast: '复制失败，请检查剪贴板权限',
-    switchSuccessToast: '已切换至目标会话',
-    modalTitle: '切换查看会话',
-    modalLoading: '正在加载会话列表…',
-    modalEmpty: '暂无历史会话',
-    modalLoadFailed: '加载失败: {err}',
     reportTitle: '### [Context Lens] Antigravity 会话上下文报告 ({title})',
     reportPromptContext: '- **当前上下文窗口占用**: {used} Tokens / {limit} Tokens ({pct}%)',
     reportCache: '- **缓存命中 (Prompt Cache)**: {cache} Tokens ({pct}%)',
@@ -73,10 +67,8 @@ const TRANSLATIONS = {
     brandTitle: 'Context Lens',
     live: 'Live',
     paused: 'Paused',
-    reading: 'Reading conversation…',
-    switchConv: 'Switch',
-    returnHost: 'Return Active',
-    returnHostToast: 'Returned to active conversation',
+    reading: 'Reading active conversation…',
+    currentConv: 'Active Conversation',
     windowLimit: 'Limit:',
     currentUsage: 'Current Prompt Context',
     healthGood: 'Healthy (Plenty)',
@@ -111,12 +103,8 @@ const TRANSLATIONS = {
     compactToastSent: 'Sent /compact instruction to conversation',
     compactToastManual: 'Tip: Please type /compact in chat to compact context',
     copiedToast: 'Diagnostic report copied to clipboard (Markdown)',
+    copiedIdToast: 'Copied active conversation ID',
     copyFailedToast: 'Copy failed, please check clipboard permissions',
-    switchSuccessToast: 'Switched to target conversation',
-    modalTitle: 'Switch Conversation',
-    modalLoading: 'Loading conversations…',
-    modalEmpty: 'No conversations found',
-    modalLoadFailed: 'Failed to load: {err}',
     reportTitle: '### [Context Lens] Antigravity Context Diagnostic Report ({title})',
     reportPromptContext: '- **Current Context Usage**: {used} Tokens / {limit} Tokens ({pct}%)',
     reportCache: '- **Prompt Cache Read**: {cache} Tokens ({pct}%)',
@@ -168,9 +156,7 @@ function updateStaticTexts() {
 // App State
 // ---------------------------------------------------------------------------
 
-let hostConvId = sidecar?.conversationId || null;
-let activeConvId = hostConvId;
-let isViewingOtherConv = false;
+let activeConvId = sidecar?.conversationId || null;
 let currentLimit = 1048576; // Default 1M
 let autoRefresh = true;
 let refreshTimer = null;
@@ -241,17 +227,13 @@ function renderStats(stats) {
   if (!stats) return;
 
   // Session Meta
-  $('current-conv-title').textContent = stats.title || t('reading');
+  $('current-conv-title').textContent = stats.title || t('currentConv');
   $('current-conv-title').title = stats.title || '';
 
-  // Show or hide 'Return to Active' button
-  const returnBtn = $('return-host-btn');
-  if (returnBtn) {
-    if (isViewingOtherConv && hostConvId && activeConvId !== hostConvId) {
-      returnBtn.hidden = false;
-    } else {
-      returnBtn.hidden = true;
-    }
+  const idBadge = $('current-conv-id');
+  if (idBadge && stats.conversationId) {
+    idBadge.textContent = stats.conversationId.slice(0, 8);
+    idBadge.title = `会话 ID: ${stats.conversationId} (点击复制)`;
   }
 
   const latest = stats.latest || {};
@@ -475,12 +457,8 @@ async function fetchData(quiet = false) {
   if (!quiet) refreshBtn.classList.add('spinning');
 
   try {
-    // Check if host conversation changed from host client navigation
-    if (sidecar?.conversationId && sidecar.conversationId !== hostConvId) {
-      hostConvId = sidecar.conversationId;
-      if (!isViewingOtherConv) {
-        activeConvId = hostConvId;
-      }
+    if (sidecar?.conversationId) {
+      activeConvId = sidecar.conversationId;
     }
 
     const query = activeConvId ? `?conversationId=${encodeURIComponent(activeConvId)}` : '';
@@ -509,15 +487,14 @@ async function fetchData(quiet = false) {
 // ---------------------------------------------------------------------------
 
 async function askToCompact() {
-  const targetId = activeConvId || hostConvId;
-  if (!targetId) {
+  if (!activeConvId) {
     showToast(currentLang === 'zh' ? '未处于活跃会话中' : 'Not in an active conversation');
     return;
   }
 
   if (sidecar?.agent?.sendMessage) {
     try {
-      await sidecar.agent.sendMessage('/compact', targetId);
+      await sidecar.agent.sendMessage('/compact', activeConvId);
       showToast(t('compactToastSent'));
       fetchData();
     } catch (err) {
@@ -581,64 +558,6 @@ function toggleLanguage() {
 }
 
 // ---------------------------------------------------------------------------
-// Conversation Switcher Modal
-// ---------------------------------------------------------------------------
-
-async function openConvModal() {
-  const modal = $('conv-modal');
-  const listEl = $('modal-conv-list');
-  listEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-muted)">${t('modalLoading')}</div>`;
-  modal.hidden = false;
-
-  try {
-    const data = await callApi('/api/conversations?limit=20');
-    const convs = data.conversations || [];
-    if (convs.length === 0) {
-      listEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-muted)">${t('modalEmpty')}</div>`;
-      return;
-    }
-
-    listEl.innerHTML = convs
-      .map(
-        (c) => `
-      <div class="modal-item ${c.id === activeConvId ? 'active' : ''}" data-id="${c.id}">
-        <div class="modal-item-title">${c.title || 'Conv ' + c.id.slice(0, 8)}</div>
-        <div class="modal-item-time">${formatTime(c.mtime)} · ID: ${c.id.slice(0, 8)}${c.id === hostConvId ? ' (当前)' : ''}</div>
-      </div>
-    `
-      )
-      .join('');
-
-    listEl.querySelectorAll('.modal-item').forEach((item) => {
-      item.addEventListener('click', async () => {
-        const id = item.getAttribute('data-id');
-        if (!id) return;
-        modal.hidden = true;
-
-        activeConvId = id;
-        isViewingOtherConv = Boolean(hostConvId && id !== hostConvId);
-
-        // If Antigravity host supports switching conversation, switch IDE to it
-        if (sidecar?.ui?.toggleConversation) {
-          try {
-            await sidecar.ui.toggleConversation(id);
-            hostConvId = id;
-            isViewingOtherConv = false;
-          } catch (e) {
-            console.warn('toggleConversation failed:', e);
-          }
-        }
-
-        fetchData(false);
-        showToast(t('switchSuccessToast'));
-      });
-    });
-  } catch (err) {
-    listEl.innerHTML = `<div style="padding:16px;color:var(--color-red)">${t('modalLoadFailed', { err: err.message })}</div>`;
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Setup & Lifecycle
 // ---------------------------------------------------------------------------
 
@@ -647,41 +566,18 @@ function setupEventListeners() {
   $('refresh-btn').addEventListener('click', () => fetchData(false));
   $('compact-btn').addEventListener('click', askToCompact);
   $('copy-report-btn').addEventListener('click', copyReport);
-  $('switch-conv-btn').addEventListener('click', openConvModal);
-  $('close-modal-btn').addEventListener('click', () => {
-    $('conv-modal').hidden = true;
-  });
 
-  // Return to active conversation button
-  const returnBtn = $('return-host-btn');
-  if (returnBtn) {
-    returnBtn.addEventListener('click', async () => {
-      if (!hostConvId) return;
-      activeConvId = hostConvId;
-      isViewingOtherConv = false;
-      if (sidecar?.ui?.toggleConversation) {
-        try {
-          await sidecar.ui.toggleConversation(hostConvId);
-        } catch (e) {}
+  // Copy conversation ID on click
+  const idBadge = $('current-conv-id');
+  if (idBadge) {
+    idBadge.addEventListener('click', () => {
+      if (activeConvId) {
+        navigator.clipboard.writeText(activeConvId)
+          .then(() => showToast(t('copiedIdToast')))
+          .catch(() => {});
       }
-      fetchData(false);
-      showToast(t('returnHostToast'));
     });
   }
-
-  // Close modal on backdrop click
-  $('conv-modal').addEventListener('click', (e) => {
-    if (e.target === $('conv-modal')) {
-      $('conv-modal').hidden = true;
-    }
-  });
-
-  // Close modal on Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !$('conv-modal').hidden) {
-      $('conv-modal').hidden = true;
-    }
-  });
 
   const limitSelect = $('limit-select');
   limitSelect.value = String(currentLimit);

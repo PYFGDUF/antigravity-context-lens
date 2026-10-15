@@ -60,58 +60,28 @@ function saveConfig(cfg) {
   return updated;
 }
 
-function getRecentConversations(limit = 15) {
-  if (!existsSync(BRAIN_DIR)) return [];
+function getLatestConversationId() {
+  if (!existsSync(BRAIN_DIR)) return null;
   try {
     const entries = readdirSync(BRAIN_DIR, { withFileTypes: true });
-    const convs = [];
+    let latestId = null;
+    let latestMtime = 0;
     for (const ent of entries) {
       if (!ent.isDirectory() || ent.name.startsWith('.')) continue;
-      const id = ent.name;
-      const transcriptPath = join(BRAIN_DIR, id, '.system_generated', 'logs', 'transcript.jsonl');
+      const transcriptPath = join(BRAIN_DIR, ent.name, '.system_generated', 'logs', 'transcript.jsonl');
       if (existsSync(transcriptPath)) {
         try {
           const st = statSync(transcriptPath);
-          convs.push({ id, mtime: st.mtimeMs, size: st.size });
+          if (st.mtimeMs > latestMtime) {
+            latestMtime = st.mtimeMs;
+            latestId = ent.name;
+          }
         } catch (e) {}
       }
     }
-    convs.sort((a, b) => b.mtime - a.mtime);
-    const top = convs.slice(0, limit);
-    if (top.length === 0) return [];
-
-    // Batch query titles from sqlite db if available
-    const titleMap = new Map();
-    try {
-      const dbPath = join(APP_DATA_DIR, 'conversation_summaries.db');
-      if (existsSync(dbPath)) {
-        const inClause = top.map((c) => `"${c.id.replace(/"/g, '""')}"`).join(',');
-        const query = `SELECT conversation_id, title FROM conversation_summaries WHERE conversation_id IN (${inClause});`;
-        const out = execFileSync('sqlite3', [dbPath, '-separator', '|||', query], {
-          encoding: 'utf8',
-          timeout: 1000,
-        }).trim();
-        if (out) {
-          const lines = out.split('\n');
-          for (const line of lines) {
-            const parts = line.split('|||');
-            if (parts.length >= 2 && parts[0] && parts[1]) {
-              const t = parts[1].trim();
-              if (t) titleMap.set(parts[0].trim(), t);
-            }
-          }
-        }
-      }
-    } catch (e) {}
-
-    return top.map((c) => ({
-      id: c.id,
-      mtime: c.mtime,
-      title: titleMap.get(c.id) || getConversationTitle(c.id),
-    }));
+    return latestId;
   } catch (err) {
-    console.error('Error listing conversations:', err);
-    return [];
+    return null;
   }
 }
 
@@ -303,26 +273,13 @@ app.api('/api/config', () => loadConfig(), 'GET');
 // POST /api/config
 app.api('/api/config', (data) => saveConfig(data), 'POST');
 
-// GET /api/conversations
-app.api(
-  '/api/conversations',
-  (data) => {
-    const limit = Number(data.limit) || 12;
-    return { conversations: getRecentConversations(limit) };
-  },
-  'GET'
-);
-
 // GET /api/context
 app.api(
   '/api/context',
   (data) => {
     let convId = data.conversationId;
     if (!convId || convId === 'null' || convId === 'undefined') {
-      const recents = getRecentConversations(1);
-      if (recents.length > 0) {
-        convId = recents[0].id;
-      }
+      convId = getLatestConversationId();
     }
 
     if (!convId) {

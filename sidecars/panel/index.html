@@ -43,12 +43,14 @@
       </div>
     </header>
 
-    <!-- Session Bar -->
+    <!-- Session Bar (Focused on Active Conversation) -->
     <div class="session-bar">
       <div class="session-meta">
-        <span id="current-conv-title" class="conv-title" data-i18n="reading">正在读取会话…</span>
-        <button id="switch-conv-btn" class="conv-selector-btn" title="查看最近会话" data-i18n="switchConv">切换</button>
-        <button id="return-host-btn" class="conv-selector-btn" style="color: var(--color-green);" hidden data-i18n="returnHost">返回当前</button>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); flex-shrink: 0;">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span id="current-conv-title" class="conv-title" data-i18n="reading">正在读取当前会话…</span>
+        <span id="current-conv-id" class="badge" style="font-family: var(--font-mono); font-size: 10px; cursor: pointer;" title="点击复制完整会话ID">ID</span>
       </div>
       <div class="limit-picker">
         <span data-i18n="windowLimit">窗口上限:</span>
@@ -204,24 +206,6 @@
 
     <!-- Toast Notification -->
     <div id="toast" class="toast-box" hidden></div>
-
-    <!-- Conversation Switcher Modal -->
-    <div id="conv-modal" class="modal-backdrop" hidden>
-      <div class="modal-box">
-        <div class="modal-header">
-          <h3 data-i18n="modalTitle">切换查看会话</h3>
-          <button id="close-modal-btn" class="icon-button" style="border:none;" title="Close">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        <div id="modal-conv-list" class="modal-list">
-          <!-- Injected dynamically -->
-        </div>
-      </div>
-    </div>
   </div>
 
   <script src="/app.js"></script>
