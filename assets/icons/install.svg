@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <title>Installation Package Icon</title>
+  <style>
+    :root {
+      --c: #059669;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --c: #6EE7B7;
+      }
+    }
+  </style>
+  <path d="M12 2L3 7L12 12L21 7L12 2Z" stroke="var(--c)" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M3 17L12 22L21 17" stroke="var(--c)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M3 12L12 17L21 12" stroke="var(--c)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

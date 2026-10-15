@@ -5,6 +5,11 @@
 <br>
 
 <p align="center">
+  <a href="./README.md"><strong>简体中文</strong></a> •
+  <a href="./README_EN.md"><strong>English</strong></a>
+</p>
+
+<p align="center">
   <strong>专为 Google Antigravity 设计的原生侧边栏上下文与 Token 深度透视面板</strong><br>
   实时捕获服务端回传数据 · Google Prompt Cache 命中率深度拆解 · 交互膨胀折线走势 · 一键 /compact 优化
 </p>
@@ -17,18 +22,21 @@
   <img src="https://img.shields.io/badge/License-MIT-gray?style=flat-square" alt="MIT License">
 </p>
 
-[✨ 核心特性](#-核心特性) •
-[🔍 物理精度解析机制](#-为什么需要-context-lens物理级真实数据) •
-[📦 快速安装](#-快速安装-installation) •
-[🚀 使用指南](#-使用指南-usage) •
-[🛠 架构原理](#-技术架构-architecture) •
-[📄 开源协议](#-开源协议-license)
+<p align="center">
+  <a href="#真实数据解析机制"><img src="./assets/icons/accuracy.svg" width="14" height="14" alt="accuracy" align="absmiddle"> 真实数据</a> •
+  <a href="#核心特性"><img src="./assets/icons/features.svg" width="14" height="14" alt="features" align="absmiddle"> 核心特性</a> •
+  <a href="#快速安装-installation"><img src="./assets/icons/install.svg" width="14" height="14" alt="install" align="absmiddle"> 快速安装</a> •
+  <a href="#使用指南-usage"><img src="./assets/icons/guide.svg" width="14" height="14" alt="guide" align="absmiddle"> 使用指南</a> •
+  <a href="#技术架构-architecture"><img src="./assets/icons/architecture.svg" width="14" height="14" alt="architecture" align="absmiddle"> 技术架构</a> •
+  <a href="#目录结构-directory-structure"><img src="./assets/icons/folder.svg" width="14" height="14" alt="folder" align="absmiddle"> 目录结构</a> •
+  <a href="#开源协议-license"><img src="./assets/icons/license.svg" width="14" height="14" alt="license" align="absmiddle"> 开源协议</a>
+</p>
 
 </div>
 
 ---
 
-## 💡 为什么需要 Context Lens？（物理级真实数据）
+## <img src="./assets/icons/accuracy.svg" width="22" height="22" alt="accuracy icon" align="absmiddle"> 真实数据解析机制
 
 很多第三方 Token 工具通过“字符数 ÷ 4”或通用的外部分词器（如 tiktoken）进行猜测，对于支持百万级上下文、内置系统预设规则以及复杂工具调用的 Google Gemini 系列模型，估算误差往往高达 **20% ~ 40%**，更无法感知 Google 革命性的 **Prompt Caching（长上下文缓存）**。
 
@@ -43,28 +51,28 @@
 
 ---
 
-## ✨ 核心特性
+## <img src="./assets/icons/features.svg" width="22" height="22" alt="features icon" align="absmiddle"> 核心特性
 
-* **🎨 100% 融合 Antigravity 原生设计**：
+* <img src="./assets/icons/theme.svg" width="16" height="16" alt="theme icon" align="absmiddle"> **100% 融合 Antigravity 原生设计**：
   采用 Google Material 3 设计语言，100% 绑定宿主注入的 CSS 主题变量（`--background`, `--card`, `--border`, `--primary`, `--foreground` 等）。无需任何外部样式侵入，原生内嵌于右侧辅助面板（Aux Pane），深浅主题自适应，视觉浑然一体。
-* **📊 实时上下文用量仪表盘**：
+* <img src="./assets/icons/gauge.svg" width="16" height="16" alt="gauge icon" align="absmiddle"> **实时上下文用量仪表盘**：
   大号醒目呈现当前 Prompt 上下文大小与健康度区间（健康 <30% / 适中 30-70% / 偏高 >70%），并支持自由切换窗口上限基准（1M / 2M / 200k / 128k）。
-* **⚡️ Google Prompt Caching 深度拆解**：
+* <img src="./assets/icons/bolt.svg" width="16" height="16" alt="bolt icon" align="absmiddle"> **Google Prompt Caching 深度拆解**：
   将每轮交互精准分解为 **缓存命中 (Cache Read)**、**新增输入 (New Input)** 与 **模型生成 (Output)**，直观展现缓存带来的成本与延迟节省。
-* **📈 纯 SVG 交互式上下文膨胀趋势图**：
+* <img src="./assets/icons/chart.svg" width="16" height="16" alt="chart icon" align="absmiddle"> **纯 SVG 交互式上下文膨胀趋势图**：
   采用轻量纯矢量 SVG 绘制平滑面积折线图，支持鼠标悬停探查每一步交互的 Token 数量、缓存比例与触发的工具指令。
-* **⚙️ 工具调用与累计吞吐统计**：
+* <img src="./assets/icons/tools.svg" width="16" height="16" alt="tools icon" align="absmiddle"> **工具调用与累计吞吐统计**：
   统计当前会话所有轮次的累计 Prompt 吞吐量、累计生成回复、思考字符数，以及各工具（如 `run_command`, `view_file` 等）的调用次数占比。
-* **💡 一键压缩优化与诊断导出**：
+* <img src="./assets/icons/optimize.svg" width="16" height="16" alt="optimize icon" align="absmiddle"> **一键压缩优化与诊断导出**：
   提供一键向 Agent 发送 `/compact` 上下文压缩指令，以及一键复制结构化 Markdown 诊断报告。
-* **🌐 完整中英双语自适应 (i18n)**：
+* <img src="./assets/icons/i18n.svg" width="16" height="16" alt="i18n icon" align="absmiddle"> **完整中英双语自适应 (i18n)**：
   自动侦测客户端与系统语言，支持在界面右上角一键无刷新切换中文 / English。
-* **🛡 纯矢量 SVG 图符，零 Emoji 违和感**：
+* <img src="./assets/icons/vector.svg" width="16" height="16" alt="vector icon" align="absmiddle"> **纯矢量 SVG 图符，零 Emoji 违和感**：
   全界面图符均采用纯矢量 SVG 绘制，消除不同操作系统 Emoji 渲染差异。
 
 ---
 
-## 📦 快速安装 (Installation)
+## <img src="./assets/icons/install.svg" width="22" height="22" alt="install icon" align="absmiddle"> 快速安装 (Installation)
 
 ### 方式一：克隆到 Antigravity 全局插件目录（推荐）
 
@@ -87,7 +95,7 @@ git clone https://github.com/PYFGDUF/antigravity-context-lens.git "$env:USERPROF
 
 ---
 
-## 🚀 使用指南 (Usage)
+## <img src="./assets/icons/guide.svg" width="22" height="22" alt="guide icon" align="absmiddle"> 使用指南 (Usage)
 
 1. **启用插件**：
    - 打开 Antigravity 客户端，点击左侧导航栏的 **Customizations**（自定义）。
@@ -100,7 +108,7 @@ git clone https://github.com/PYFGDUF/antigravity-context-lens.git "$env:USERPROF
 
 ---
 
-## 🛠 技术架构 (Architecture)
+## <img src="./assets/icons/architecture.svg" width="22" height="22" alt="architecture icon" align="absmiddle"> 技术架构 (Architecture)
 
 Context Lens 严格遵循 Google Antigravity 官方 Sidecar SDK 规范构建，具备极高的稳定性和安全性：
 
@@ -122,13 +130,14 @@ Antigravity Client (GUI)
 
 ---
 
-## 📁 目录结构 (Directory Structure)
+## <img src="./assets/icons/folder.svg" width="22" height="22" alt="folder icon" align="absmiddle"> 目录结构 (Directory Structure)
 
 ```text
 context-lens/
 ├── assets/
 │   ├── hero.svg                 # 高清纯矢量 Hero Banner (1200x440 SVG)
-│   └── logo.svg                 # 插件图标 (64x64 SVG)
+│   ├── logo.svg                 # 插件图标 (64x64 SVG)
+│   └── icons/                   # 纯矢量章节与特性图标 (SVG, 零 Emoji)
 ├── sidecars/
 │   └── panel/                   # UI Extension 核心实现
 │       ├── sidecar.json         # 进程配置与 Aux Pane 视图声明
@@ -140,11 +149,12 @@ context-lens/
 ├── .gitignore                   # Git 忽略配置
 ├── LICENSE                      # MIT 开源协议
 ├── plugin.json                  # Antigravity 插件清单
-└── README.md                    # 本文档
+├── README.md                    # 中文说明文档
+└── README_EN.md                 # 英文说明文档
 ```
 
 ---
 
-## 📄 开源协议 (License)
+## <img src="./assets/icons/license.svg" width="22" height="22" alt="license icon" align="absmiddle"> 开源协议 (License)
 
 本项目基于 [MIT License](LICENSE) 开源。欢迎提交 Issue 与 Pull Request 共同完善！

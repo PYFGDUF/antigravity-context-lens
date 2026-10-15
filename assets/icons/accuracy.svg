@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <title>Physical Accuracy Icon</title>
+  <style>
+    :root {
+      --c: #1A73E8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --c: #8AB4F8;
+      }
+    }
+  </style>
+  <circle cx="12" cy="12" r="9" stroke="var(--c)" stroke-width="2"/>
+  <circle cx="12" cy="12" r="5" stroke="var(--c)" stroke-width="2"/>
+  <circle cx="12" cy="12" r="1.5" fill="var(--c)"/>
+  <line x1="12" y1="1" x2="12" y2="4" stroke="var(--c)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="12" y1="20" x2="12" y2="23" stroke="var(--c)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="1" y1="12" x2="4" y2="12" stroke="var(--c)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="20" y1="12" x2="23" y2="12" stroke="var(--c)" stroke-width="2" stroke-linecap="round"/>
+</svg>

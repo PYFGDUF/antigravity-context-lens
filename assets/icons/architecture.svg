@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <title>Architecture Blueprint Icon</title>
+  <style>
+    :root {
+      --c: #4F46E5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --c: #A5B4FC;
+      }
+    }
+  </style>
+  <rect x="3" y="3" width="7" height="6" rx="1.5" stroke="var(--c)" stroke-width="2"/>
+  <rect x="14" y="3" width="7" height="6" rx="1.5" stroke="var(--c)" stroke-width="2"/>
+  <rect x="8.5" y="15" width="7" height="6" rx="1.5" stroke="var(--c)" stroke-width="2"/>
+  <path d="M6.5 9V12H17.5V9" stroke="var(--c)" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="12" y1="12" x2="12" y2="15" stroke="var(--c)" stroke-width="2"/>
+</svg>
