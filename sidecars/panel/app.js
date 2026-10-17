@@ -302,16 +302,78 @@ function renderStats(stats) {
 }
 
 // ---------------------------------------------------------------------------
-// SVG Timeline Chart
+// SVG Timeline Chart (Monotone Cubic Spline with Interactive Probe)
 // ---------------------------------------------------------------------------
+
+function buildMonotoneCubicPath(points, H, padB) {
+  const n = points.length;
+  if (n === 0) return { lineD: '', areaD: '' };
+  const firstPt = points[0];
+  const lastPt = points[n - 1];
+
+  if (n === 1) {
+    const lineD = `M ${(firstPt.x - 4).toFixed(1)} ${firstPt.y.toFixed(1)} L ${(firstPt.x + 4).toFixed(1)} ${firstPt.y.toFixed(1)}`;
+    const areaD = `M ${(firstPt.x - 4).toFixed(1)} ${H - padB} L ${(firstPt.x - 4).toFixed(1)} ${firstPt.y.toFixed(1)} L ${(firstPt.x + 4).toFixed(1)} ${firstPt.y.toFixed(1)} L ${(firstPt.x + 4).toFixed(1)} ${H - padB} Z`;
+    return { lineD, areaD };
+  }
+
+  if (n === 2) {
+    const lineD = `M ${firstPt.x.toFixed(1)} ${firstPt.y.toFixed(1)} L ${lastPt.x.toFixed(1)} ${lastPt.y.toFixed(1)}`;
+    const areaD = `M ${firstPt.x.toFixed(1)} ${H - padB} L ${firstPt.x.toFixed(1)} ${firstPt.y.toFixed(1)} L ${lastPt.x.toFixed(1)} ${lastPt.y.toFixed(1)} L ${lastPt.x.toFixed(1)} ${H - padB} Z`;
+    return { lineD, areaD };
+  }
+
+  const dxs = [];
+  const dys = [];
+  const ms = [];
+
+  for (let i = 0; i < n - 1; i++) {
+    const dx = points[i + 1].x - points[i].x;
+    const dy = points[i + 1].y - points[i].y;
+    dxs.push(dx);
+    dys.push(dy);
+    ms.push(dx === 0 ? 0 : dy / dx);
+  }
+
+  const tangents = [ms[0]];
+  for (let i = 0; i < n - 2; i++) {
+    const m0 = ms[i];
+    const m1 = ms[i + 1];
+    if (m0 * m1 <= 0) {
+      tangents.push(0);
+    } else {
+      const dx_ = dxs[i] + dxs[i + 1];
+      tangents.push((3 * dx_) / ((dx_ + dxs[i + 1]) / m0 + (dx_ + dxs[i]) / m1));
+    }
+  }
+  tangents.push(ms[ms.length - 1]);
+
+  let curveSegments = '';
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = points[i];
+    const p1 = points[i + 1];
+    const h = dxs[i];
+    const cp1x = p0.x + h / 3;
+    const cp1y = p0.y + (tangents[i] * h) / 3;
+    const cp2x = p1.x - h / 3;
+    const cp2y = p1.y - (tangents[i + 1] * h) / 3;
+    curveSegments += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`;
+  }
+
+  const lineD = `M ${firstPt.x.toFixed(1)} ${firstPt.y.toFixed(1)}${curveSegments}`;
+  const areaD = `M ${firstPt.x.toFixed(1)} ${H - padB} L ${firstPt.x.toFixed(1)} ${firstPt.y.toFixed(1)}${curveSegments} L ${lastPt.x.toFixed(1)} ${H - padB} Z`;
+
+  return { lineD, areaD };
+}
 
 function renderTimelineChart(timeline) {
   const svg = $('timeline-svg');
   const tooltip = $('chart-tooltip');
+  if (!svg || !timeline) return;
 
-  if (!timeline || timeline.length === 0) {
+  if (timeline.length === 0) {
     svg.innerHTML = `
-      <text x="250" y="60" text-anchor="middle" fill="var(--text-muted)" font-size="12">
+      <text x="50%" y="55%" text-anchor="middle" fill="var(--text-muted)" font-size="12">
         ${t('noTimeline')}
       </text>
     `;
@@ -339,73 +401,116 @@ function renderTimelineChart(timeline) {
     return H - padB - ratio * (H - padT - padB);
   };
 
-  let gridSvg = `
+  const gridSvg = `
     <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="var(--border-color)" stroke-width="1"/>
     <line x1="${padL}" y1="${padT}" x2="${W - padR}" y2="${padT}" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="3 3"/>
     <text x="${padL - 4}" y="${padT + 4}" text-anchor="end" fill="var(--text-muted)" font-size="9" font-family="var(--font-mono)">${formatTokens(maxVal)}</text>
     <text x="${padL - 4}" y="${H - padB}" text-anchor="end" fill="var(--text-muted)" font-size="9" font-family="var(--font-mono)">0</text>
   `;
 
-  let lineD = '';
-  let areaD = '';
+  const pts = timeline.map((pt, i) => ({
+    x: getX(i),
+    y: getY(pt.contextTokens),
+    raw: pt,
+    index: i,
+  }));
 
-  timeline.forEach((pt, i) => {
-    const x = getX(i);
-    const y = getY(pt.contextTokens);
-    if (i === 0) {
-      lineD += `M ${x} ${y}`;
-      areaD += `M ${x} ${H - padB} L ${x} ${y}`;
-    } else {
-      lineD += ` L ${x} ${y}`;
-      areaD += ` L ${x} ${y}`;
-    }
-  });
+  const { lineD, areaD } = buildMonotoneCubicPath(pts, H, padB);
+  const lastPt = pts[pts.length - 1];
 
-  const lastX = getX(len - 1);
-  areaD += ` L ${lastX} ${H - padB} Z`;
+  // Static End Point Marker (indicates active head)
+  const endPointMarker = `
+    <circle cx="${lastPt.x.toFixed(1)}" cy="${lastPt.y.toFixed(1)}" r="5.5" fill="var(--accent-color)" opacity="0.25"/>
+    <circle cx="${lastPt.x.toFixed(1)}" cy="${lastPt.y.toFixed(1)}" r="2.5" fill="var(--accent-color)" stroke="var(--card-bg)" stroke-width="1.5"/>
+  `;
 
-  let pointsSvg = '';
-  timeline.forEach((pt, i) => {
-    const x = getX(i);
-    const y = getY(pt.contextTokens);
-    pointsSvg += `
-      <circle cx="${x}" cy="${y}" r="3" fill="var(--accent-color)" stroke="var(--card-bg)" stroke-width="1.5" class="chart-point" data-idx="${i}"/>
-    `;
-  });
+  // Interactive Probe (Crosshair Line & Dot)
+  const probeSvg = `
+    <g id="chart-probe-group" style="opacity: 0; pointer-events: none; transition: opacity 0.12s ease;">
+      <line id="probe-line" x1="0" y1="${padT}" x2="0" y2="${H - padB}" stroke="var(--accent-color)" stroke-width="1" stroke-dasharray="2 3" opacity="0.75"/>
+      <circle id="probe-glow" cx="0" cy="0" r="7.5" fill="var(--accent-color)" opacity="0.25"/>
+      <circle id="probe-dot" cx="0" cy="0" r="3.5" fill="var(--accent-color)" stroke="var(--card-bg)" stroke-width="2"/>
+    </g>
+    <rect id="chart-overlay" x="${padL}" y="${padT}" width="${W - padL - padR}" height="${H - padT - padB}" fill="transparent" style="cursor: crosshair;"/>
+  `;
 
   svg.innerHTML = `
     <defs>
       <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="var(--accent-color)" stop-opacity="0.25"/>
+        <stop offset="0%" stop-color="var(--accent-color)" stop-opacity="0.28"/>
         <stop offset="100%" stop-color="var(--accent-color)" stop-opacity="0.0"/>
       </linearGradient>
     </defs>
     ${gridSvg}
     <path d="${areaD}" fill="url(#areaGrad)"/>
-    <path d="${lineD}" fill="none" stroke="var(--accent-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    ${pointsSvg}
+    <path d="${lineD}" fill="none" stroke="var(--accent-color)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${endPointMarker}
+    ${probeSvg}
   `;
 
-  const points = svg.querySelectorAll('.chart-point');
-  points.forEach((ptEl) => {
-    ptEl.addEventListener('mouseenter', () => {
-      const idx = Number(ptEl.getAttribute('data-idx'));
-      const d = timeline[idx];
-      if (!d) return;
+  // Interactive Hover & Scrubbing Handlers
+  const overlay = svg.querySelector('#chart-overlay');
+  const probeGroup = svg.querySelector('#chart-probe-group');
+  const probeLine = svg.querySelector('#probe-line');
+  const probeGlow = svg.querySelector('#probe-glow');
+  const probeDot = svg.querySelector('#probe-dot');
 
+  if (overlay && probeGroup) {
+    function updateProbe(evt) {
+      const rect = svg.getBoundingClientRect();
+      if (rect.width === 0) return;
+
+      const clientX = evt.clientX;
+      const svgX = ((clientX - rect.left) / rect.width) * W;
+
+      // Find closest point by index (O(1) calculation)
+      let closestIdx = 0;
+      if (len > 1) {
+        const ratio = (svgX - padL) / (W - padL - padR);
+        closestIdx = Math.round(ratio * (len - 1));
+        closestIdx = Math.max(0, Math.min(len - 1, closestIdx));
+      }
+
+      const target = pts[closestIdx];
+      if (!target) return;
+      const d = target.raw;
+
+      // Update crosshair & highlight dot
+      probeLine.setAttribute('x1', target.x.toFixed(1));
+      probeLine.setAttribute('x2', target.x.toFixed(1));
+      probeGlow.setAttribute('cx', target.x.toFixed(1));
+      probeGlow.setAttribute('cy', target.y.toFixed(1));
+      probeDot.setAttribute('cx', target.x.toFixed(1));
+      probeDot.setAttribute('cy', target.y.toFixed(1));
+      probeGroup.style.opacity = '1';
+
+      // Update Tooltip
       const cachePct = d.contextTokens > 0 ? ((d.cacheReadTokens / d.contextTokens) * 100).toFixed(0) : 0;
       const toolInfo = d.tools && d.tools.length > 0 ? ` [${d.tools.join(', ')}]` : '';
-
       tooltip.innerHTML = `
         <strong>#${d.step}</strong>: ${formatFullNum(d.contextTokens)} tk (${cachePct}% cache)${toolInfo}
       `;
-      tooltip.classList.add('visible');
-    });
 
-    ptEl.addEventListener('mouseleave', () => {
+      // Smart positioning: avoid obscuring cursor
+      if (target.x > W * 0.58) {
+        tooltip.style.left = '8px';
+        tooltip.style.right = 'auto';
+      } else {
+        tooltip.style.left = 'auto';
+        tooltip.style.right = '8px';
+      }
+      tooltip.classList.add('visible');
+    }
+
+    function hideProbe() {
+      probeGroup.style.opacity = '0';
       tooltip.classList.remove('visible');
-    });
-  });
+    }
+
+    overlay.addEventListener('pointermove', updateProbe);
+    overlay.addEventListener('pointerdown', updateProbe);
+    overlay.addEventListener('pointerleave', hideProbe);
+  }
 }
 
 // ---------------------------------------------------------------------------
