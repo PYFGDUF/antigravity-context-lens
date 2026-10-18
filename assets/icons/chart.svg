@@ -1,16 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-  <title>Growth Trend Analytics Chart Icon</title>
-  <style>
-    :root {
-      --c: #3B82F6;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --c: #60A5FA;
-      }
-    }
-  </style>
-  <polyline points="3 17 9 11 14 15 21 7" fill="none" stroke="var(--c)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <polyline points="15 7 21 7 21 13" fill="none" stroke="var(--c)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <line x1="3" y1="21" x2="21" y2="21" stroke="var(--c)" stroke-width="2" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Context growth</title>
+  <g stroke="#958265" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3.5 4v16.5H21M6.5 15.5l4-5 4 2.5 6-7M16 6h4.5v4.5"/>
+  </g>
 </svg>

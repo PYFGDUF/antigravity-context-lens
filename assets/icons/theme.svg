@@ -1,18 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-  <title>Theme Design Palette Icon</title>
-  <style>
-    :root {
-      --c: #EA4335;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --c: #F28B82;
-      }
-    }
-  </style>
-  <path d="M12 3C7.03 3 3 7.03 3 12C3 16.97 7.03 21 12 21C12.83 21 13.5 20.33 13.5 19.5C13.5 19.11 13.35 18.76 13.11 18.49C12.88 18.23 12.73 17.88 12.73 17.5C12.73 16.67 13.4 16 14.23 16H16C18.76 16 21 13.76 21 11C21 6.58 16.97 3 12 3Z" stroke="var(--c)" stroke-width="2"/>
-  <circle cx="7.5" cy="10.5" r="1.5" fill="var(--c)"/>
-  <circle cx="10.5" cy="7.5" r="1.5" fill="var(--c)"/>
-  <circle cx="14.5" cy="7.5" r="1.5" fill="var(--c)"/>
-  <circle cx="17.5" cy="11.5" r="1.5" fill="var(--c)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Native theme</title>
+  <g stroke="#958265" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="#958265" stroke="none"/>
+  </g>
 </svg>

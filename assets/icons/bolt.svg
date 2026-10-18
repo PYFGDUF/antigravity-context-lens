@@ -1,14 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-  <title>Prompt Cache Lightning Bolt Icon</title>
-  <style>
-    :root {
-      --c: #10B981;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --c: #34D399;
-      }
-    }
-  </style>
-  <polygon points="13 2 4 14 11 14 9 22 20 10 13 10 15 2" stroke="var(--c)" stroke-width="2" stroke-linejoin="round" fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Prompt cache</title>
+  <g stroke="#958265" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13.5 3 5 13h6l-.5 8L19 11h-6l.5-8Z"/>
+  </g>
 </svg>

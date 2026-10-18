@@ -1,17 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-  <title>Usage Guide Icon</title>
-  <style>
-    :root {
-      --c: #2563EB;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --c: #93C5FD;
-      }
-    }
-  </style>
-  <circle cx="12" cy="12" r="9.5" stroke="var(--c)" stroke-width="2"/>
-  <polygon points="12,6 15,11 9,11" fill="var(--c)"/>
-  <polygon points="12,18 9,13 15,13" fill="var(--c)" opacity="0.4"/>
-  <circle cx="12" cy="12" r="1.5" fill="var(--c)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Usage guide</title>
+  <g stroke="#958265" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="8.5"/><path d="m16.5 7.5-3 6-6 3 3-6 6-3Z"/>
+  </g>
 </svg>

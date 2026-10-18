@@ -1,17 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-  <title>One-click Optimization Wand Icon</title>
-  <style>
-    :root {
-      --c: #EC4899;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --c: #F472B6;
-      }
-    }
-  </style>
-  <line x1="4" y1="20" x2="16" y2="8" stroke="var(--c)" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M15 4L16 6.5L18.5 7.5L16 8.5L15 11L14 8.5L11.5 7.5L14 6.5L15 4Z" fill="var(--c)"/>
-  <circle cx="6" cy="6" r="1.5" fill="var(--c)"/>
-  <circle cx="19" cy="15" r="1" fill="var(--c)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Compact context</title>
+  <g stroke="#958265" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 5h6v6M9 5l-5 5M21 19h-6v-6m0 6 5-5"/>
+  </g>
 </svg>
